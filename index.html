@@ -3,15 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JW Player with Customizations</title>
+    <title>Custom JW Player with Skin</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://content.jwplatform.com/libraries/KB5zFt7A.js"></script>
     <style>
-        /* Optional: Basic styling for the player container */
+        /* Custom styles based on the provided skin */
         #player {
             width: 100%;
             height: 100vh;
-            background: black;
+            background-color: #000;
         }
+        .jw-icon-rewind,
+        .jw-icon-forward {
+            filter: brightness(0) invert(1); /* Make icons white */
+        }
+        .jw-text-live {
+            color: red;
+        }
+        /* Add spacing between buttons */
+        .jw-button-container {
+            display: flex;
+            justify-content: center; /* Center buttons horizontally */
+            gap: 10px; /* Adjust the gap between buttons */
+        }
+        /* Specific adjustments for individual buttons if needed */
+        .jw-icon-fullscreen,
+        .jw-icon-share,
+        .jw-icon-pip {
+            margin: 0 5px; /* Adjust margin as needed */
+        }
+        /* Add more custom styles as needed */
     </style>
 </head>
 <body>
@@ -32,8 +53,22 @@
             };
         }
 
-        // Function to setup JWPlayer
-        function setupPlayer(videoUrl, drmOptions = null) {
+        // Function to determine the source type (HLS, DASH, MP4, MKV)
+        function determineSourceType(url) {
+            if (url.endsWith(".mkv") || url.endsWith(".mp4")) {
+                return "mp4";
+            } else if (url.endsWith(".m3u8")) {
+                return "hls";
+            } else if (url.endsWith(".mpd")) {
+                return "dash";
+            }
+            return "mp4"; // Default to MP4
+        }
+
+        // Function to setup JWPlayer with dynamic source detection
+        function setupPlayer(videoUrl, drmOptions = null, posterUrl = null) {
+            const sourceType = determineSourceType(videoUrl);
+
             const playerInstance = jwplayer("player").setup({
                 controls: true,
                 sharing: true,
@@ -61,7 +96,7 @@
                         sources: [
                             {
                                 file: videoUrl,
-                                type: drmOptions ? "dash" : "hls",
+                                type: sourceType,
                                 label: "1080p",
                                 default: true
                             }
@@ -82,7 +117,8 @@
                             tag: ""
                         }
                     ]
-                }
+                },
+                image: posterUrl // Add the poster image URL here
             });
 
             playerInstance.on("ready", function () {
@@ -91,13 +127,6 @@
                 const spacer = buttonContainer.querySelector(".jw-spacer");
                 const timeSlider = playerContainer.querySelector(".jw-slider-time");
                 buttonContainer.replaceChild(timeSlider, spacer);
-
-                playerInstance.on("adBlock", () => {
-                    const modal = document.querySelector("div.modal");
-                    modal.style.display = "flex";
-
-                    document.getElementById("close").addEventListener("click", () => location.reload());
-                });
 
                 const rewindContainer = playerContainer.querySelector(".jw-display-icon-rewind");
                 const forwardContainer = rewindContainer.cloneNode(true);
@@ -125,13 +154,14 @@
         // Intercept network requests
         interceptNetworkRequests();
 
-        // Setup player with the video URL and DRM options
+        // Replace the URL below with your desired video URL and poster URL
         setupPlayer(
-            "https://a39aivottlinear-a.akamaihd.net/OTTB/sin-nitro/live/clients/dash/enc/l8j2xgwt32/out/v1/fe72171ab2684ab8b9ee3e2ffcc9cff2/cenc.mpd",
+            "https://a39aivottlinear-a.akamaihd.net/OTTB/sin-nitro/live/clients/dash/enc/l8j2xgwt32/out/v1/fe72171ab2684ab8b9ee3e2ffcc9cff2/cenc.mpd", // Replace this with the MKV, MP4, HLS, or DASH URL
             {
-                keyId: "159a2b4e1d2d7f16892d35d935a2fb34",
-                key: "07809840dd0f511221ca78459167d1b3"
-            }
+                keyId: "159a2b4e1d2d7f16892d35d935a2fb34", // Replace with your DRM keyId if needed
+                key: "07809840dd0f511221ca78459167d1b3"  // Replace with your DRM key if needed
+            },
+            "" // Replace this with your poster image URL
         );
     </script>
 </body>
