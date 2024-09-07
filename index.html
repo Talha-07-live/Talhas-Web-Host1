@@ -10,7 +10,7 @@
         body, html {
             margin: 0;
             padding: 0;
-            width: 40%;
+            width: 100%;
             height: 100%;
             overflow: hidden;
         /* Custom styles based on the provided skin */
@@ -31,7 +31,7 @@
         .jw-button-container {
             display: flex;
             justify-content: center; /* Center buttons horizontally */
-            gap: 5px; /* Adjust the gap between buttons */
+            gap: 10px; /* Adjust the gap between buttons */
         }
         /* Specific adjustments for individual buttons if needed */
         .jw-icon-fullscreen,
@@ -73,8 +73,28 @@
         }
 
         // Function to setup JWPlayer with dynamic source detection
-        function setupPlayer(videoUrl, drmOptions = null, posterUrl = null) {
-            const sourceType = determineSourceType(videoUrl);
+        function setupPlayer(videoUrls, drmOptions = null, posterUrl = null) {
+            const playlistItems = videoUrls.map((url, index) => {
+                return {
+                    title: `Server ${index + 1}`,
+                    description: `Talha's Stream${index + 00}`,
+                    image: "https://s11.gifyu.com/images/S1l3T.jpg",
+                    sources: [
+                        {
+                            file: url,
+                            type: determineSourceType(url),
+                            label: "1080p",
+                            default: true
+                        }
+                    ],
+                    drm: drmOptions ? {
+                        clearkey: {
+                            keyId: drmOptions.keyId,
+                            key: drmOptions.key
+                        }
+                    } : null
+                };
+            });
 
             const playerInstance = jwplayer("player").setup({
                 controls: true,
@@ -96,27 +116,8 @@
                     edgeStyle: "raised"
                 },
 
-                playlist: [
-                    {
-                        title: "Talha's Stream",
-                        description: "You're Watching",
-                        image: "https://s11.gifyu.com/images/S1l3T.jpg",
-                        sources: [
-                            {
-                                file: videoUrl,
-                                type: sourceType,
-                                label: "1080p",
-                                default: true
-                            }
-                        ],
-                        drm: drmOptions ? {
-                            clearkey: {
-                                keyId: drmOptions.keyId,
-                                key: drmOptions.key
-                            }
-                        } : null
-                    }
-                ],
+                playlist: playlistItems,
+
                 advertising: {
                     client: "vast",
                     schedule: [
@@ -126,7 +127,7 @@
                         }
                     ]
                 },
-                image: "" // Add the poster image URL here
+                image: posterUrl // Add the poster image URL here
             });
 
             playerInstance.on("ready", function () {
@@ -162,9 +163,13 @@
         // Intercept network requests
         interceptNetworkRequests();
 
-        // Replace the URL below with your desired video URL and poster URL
+        // Replace the URLs below with your desired video URLs
         setupPlayer(
-            "https://a39aivottlinear-a.akamaihd.net/OTTB/sin-nitro/live/clients/dash/enc/l8j2xgwt32/out/v1/fe72171ab2684ab8b9ee3e2ffcc9cff2/cenc.mpd", // Replace this with the MKV, MP4, HLS, or DASH URL
+            [
+                "https://a39aivottlinear-a.akamaihd.net/OTTB/sin-nitro/live/clients/dash/enc/l8j2xgwt32/out/v1/fe72171ab2684ab8b9ee3e2ffcc9cff2/cenc.mpd",
+                "https://kbsworld-ott.akamaized.net/hls/live/2002341/kbsworld/01.m3u8"
+                
+            ],
             {
                 keyId: "159a2b4e1d2d7f16892d35d935a2fb34", // Replace with your DRM keyId if needed
                 key: "07809840dd0f511221ca78459167d1b3"  // Replace with your DRM key if needed
