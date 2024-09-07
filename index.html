@@ -13,7 +13,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-        /* Custom styles based on the provided skin */
+        }
         #player {
             position: absolute;
             width: 100% !important;
@@ -27,52 +27,24 @@
         .jw-text-live {
             color: red;
         }
-        /* Add spacing between buttons */
         .jw-button-container {
             display: flex;
             justify-content: center; /* Center buttons horizontally */
             gap: 10px; /* Adjust the gap between buttons */
         }
-        /* Specific adjustments for individual buttons if needed */
         .jw-icon-fullscreen,
         .jw-icon-share,
         .jw-icon-pip {
             margin: 0 5px; /* Adjust margin as needed */
         }
-        /* Add more custom styles as needed */
     </style>
 </head>
 <body>
     <div id="player"></div>
 
     <script>
-        // JWPlayer API Key
         jwplayer.key = 'XSuP4qMl+9tK17QNb+4+th2Pm9AWgMO/cYH8CI0HGGr7bdjo';
 
-        // Function to intercept network requests and modify URLs
-        function interceptNetworkRequests() {
-            const originalOpen = XMLHttpRequest.prototype.open;
-            XMLHttpRequest.prototype.open = function(method, url) {
-                if (url.startsWith('https://talhas.stream.000.pe/')) {
-                    url = url.replace('talhas.stream.000.pe/hls/live', 'talhas.stream.000.pe');
-                }
-                return originalOpen.apply(this, arguments);
-            };
-        }
-
-        // Function to determine the source type (HLS, DASH, MP4, MKV)
-        function determineSourceType(url) {
-            if (url.endsWith(".mkv") || url.endsWith(".mp4")) {
-                return "mp4";
-            } else if (url.endsWith(".m3u8")) {
-                return "hls";
-            } else if (url.endsWith(".mpd")) {
-                return "dash";
-            }
-            return "mp4"; // Default to MP4
-        }
-
-        // Function to setup JWPlayer with dynamic source detection
         function setupPlayer(videoUrls, drmOptions = null, posterUrl = null) {
             const playlistItems = videoUrls.map((url, index) => {
                 return {
@@ -96,7 +68,7 @@
                 };
             });
 
-            const playerInstance = jwplayer("player").setup({
+            jwplayer("player").setup({
                 controls: true,
                 sharing: true,
                 displaytitle: true,
@@ -104,20 +76,16 @@
                 displaydescription: true,
                 abouttext: "Video Player By Talha's Stream",
                 aboutlink: "https://t.me/talhasmovie_request_bot",
-
                 skin: {
                     name: "netflix"
                 },
-
                 captions: {
                     color: "#FFF",
                     fontSize: 14,
                     backgroundOpacity: 0,
                     edgeStyle: "raised"
                 },
-
                 playlist: playlistItems,
-
                 advertising: {
                     client: "vast",
                     schedule: [
@@ -127,11 +95,9 @@
                         }
                     ]
                 },
-                image: posterUrl // Add the poster image URL here
-            });
-
-            playerInstance.on("ready", function () {
-                const playerContainer = playerInstance.getContainer();
+                image: posterUrl
+            }).on("ready", function () {
+                const playerContainer = jwplayer().getContainer();
                 const buttonContainer = playerContainer.querySelector(".jw-button-container");
                 const spacer = buttonContainer.querySelector(".jw-spacer");
                 const timeSlider = playerContainer.querySelector(".jw-slider-time");
@@ -154,27 +120,33 @@
 
                 [forwardDisplayButton, forwardControlBarButton].forEach((button) => {
                     button.onclick = () => {
-                        playerInstance.seek(playerInstance.getPosition() + 10);
+                        jwplayer().seek(jwplayer().getPosition() + 10);
                     };
                 });
             });
         }
 
-        // Intercept network requests
-        interceptNetworkRequests();
+        function determineSourceType(url) {
+            if (url.endsWith(".mkv") || url.endsWith(".mp4")) {
+                return "mp4";
+            } else if (url.endsWith(".m3u8")) {
+                return "hls";
+            } else if (url.endsWith(".mpd")) {
+                return "dash";
+            }
+            return "mp4"; // Default to MP4
+        }
 
-        // Replace the URLs below with your desired video URLs
         setupPlayer(
             [
                 "https://a39aivottlinear-a.akamaihd.net/OTTB/sin-nitro/live/clients/dash/enc/l8j2xgwt32/out/v1/fe72171ab2684ab8b9ee3e2ffcc9cff2/cenc.mpd",
                 "https://kbsworld-ott.akamaized.net/hls/live/2002341/kbsworld/01.m3u8"
-                
             ],
             {
-                keyId: "159a2b4e1d2d7f16892d35d935a2fb34", // Replace with your DRM keyId if needed
-                key: "07809840dd0f511221ca78459167d1b3"  // Replace with your DRM key if needed
+                keyId: "159a2b4e1d2d7f16892d35d935a2fb34",
+                key: "07809840dd0f511221ca78459167d1b3"
             },
-            "" // Replace this with your poster image URL
+            ""
         );
     </script>
 </body>
