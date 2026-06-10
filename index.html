@@ -1,34 +1,222 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.15.12/shaka-player.compiled.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Premium Video Player</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:#000;
+height:100vh;
+overflow:hidden;
+font-family:Arial,sans-serif;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.player-container{
+width:100vw;
+height:100vh;
+position:relative;
+background:#000;
+}
+
+video{
+width:100%;
+height:100%;
+object-fit:contain;
+background:#000;
+}
+
+.loading{
+position:absolute;
+inset:0;
+display:flex;
+justify-content:center;
+align-items:center;
+backdrop-filter:blur(8px);
+background:rgba(0,0,0,.4);
+z-index:10;
+}
+
+.spinner{
+width:60px;
+height:60px;
+border:5px solid rgba(255,255,255,.2);
+border-top-color:white;
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
+
+.topbar{
+position:absolute;
+top:15px;
+left:15px;
+right:15px;
+display:flex;
+justify-content:space-between;
+z-index:20;
+}
+
+.badge{
+padding:8px 12px;
+border-radius:12px;
+background:rgba(255,255,255,.1);
+backdrop-filter:blur(10px);
+color:white;
+font-size:14px;
+}
+
+.controls{
+position:absolute;
+bottom:20px;
+right:20px;
+display:flex;
+gap:10px;
+z-index:20;
+}
+
+.btn{
+border:none;
+cursor:pointer;
+padding:12px 16px;
+border-radius:14px;
+background:rgba(255,255,255,.12);
+color:white;
+backdrop-filter:blur(12px);
+}
+
+.btn:hover{
+transform:scale(1.05);
+}
+
+.retry{
+display:none;
+position:absolute;
+inset:0;
+justify-content:center;
+align-items:center;
+z-index:30;
+}
+
+.retry button{
+padding:15px 25px;
+font-size:16px;
+cursor:pointer;
+}
+</style>
 </head>
 <body>
 
-<video id="video"
-       controls
-       autoplay
-       style="width:100%;max-width:1000px">
+<div class="player-container">
+
+<div class="topbar">
+<div class="badge" id="status">Loading...</div>
+<div class="badge" id="network">Checking...</div>
+</div>
+
+<video
+id="video"
+controls
+playsinline
+autoplay>
 </video>
 
+<div class="loading" id="loading">
+<div class="spinner"></div>
+</div>
+
+<div class="retry" id="retryBox">
+<button onclick="location.reload()">Reload Player</button>
+</div>
+
+<div class="controls">
+<button class="btn" onclick="toggleFullscreen()">Fullscreen</button>
+</div>
+
+</div>
+
 <script>
-async function init() {
-  const video = document.getElementById('video');
-  const player = new shaka.Player(video);
+const video=document.getElementById("video");
+const loading=document.getElementById("loading");
+const status=document.getElementById("status");
+const network=document.getElementById("network");
+const retry=document.getElementById("retryBox");
 
-  player.configure({
-    drm: {
-      servers: {
-        'com.widevine.alpha': 'https://mrpw.ptmnc01.verspective.net/?deviceId=NDIzMDJhZmUtYWRjMi0zNGJkLTkyN2EtYmE1ZDFlZWIwODEz'
-      }
-    }
-  });
+/*
+Insert your own video URL below.
+Example:
+video.src="https://example.com/video.mp4";
+*/
+video.src="https://andro.226503.xyz/checklist/androstreamlivebs1.m3u8";
 
-  await player.load('https://andro.226503.xyz/checklist/androstreamlivebs1.m3u8');
+function hideLoader(){
+loading.style.display="none";
 }
 
-init().catch(console.error);
+function showLoader(){
+loading.style.display="flex";
+}
+
+video.addEventListener("loadeddata",()=>{
+hideLoader();
+status.innerText="Ready";
+});
+
+video.addEventListener("playing",()=>{
+hideLoader();
+status.innerText="Playing";
+});
+
+video.addEventListener("waiting",()=>{
+showLoader();
+status.innerText="Buffering...";
+});
+
+video.addEventListener("stalled",()=>{
+showLoader();
+status.innerText="Network Slow";
+});
+
+video.addEventListener("error",()=>{
+loading.style.display="none";
+retry.style.display="flex";
+status.innerText="Playback Error";
+});
+
+function toggleFullscreen(){
+const el=document.querySelector(".player-container");
+
+if(!document.fullscreenElement){
+el.requestFullscreen();
+}else{
+document.exitFullscreen();
+}
+}
+
+function updateNetwork(){
+if(!navigator.onLine){
+network.innerText="Offline";
+}else{
+network.innerText="Online";
+}
+}
+
+window.addEventListener("online",updateNetwork);
+window.addEventListener("offline",updateNetwork);
+updateNetwork();
 </script>
 
 </body>
