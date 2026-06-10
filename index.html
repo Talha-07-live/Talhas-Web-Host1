@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.15.12/shaka-player.compiled.js"></script>
+</head>
+<body>
+
+<video id="video"
+       controls
+       autoplay
+       style="width:100%;max-width:1000px">
+</video>
+
+<script>
+async function init() {
+  const video = document.getElementById('video');
+  const player = new shaka.Player(video);
+
+  player.configure({
+    drm: {
+      servers: {
+        'com.widevine.alpha': 'https://mrpw.ptmnc01.verspective.net/?deviceId=NDIzMDJhZmUtYWRjMi0zNGJkLTkyN2EtYmE1ZDFlZWIwODEz'
+      }
+    }
+  });
+
+  await player.load('https://cempedak-live-cdn.mncnow.id/live/eds/MNCSports3-HD/sa_dash_vmx/MNCSports3-HD.mpd');
+}
+
+init().catch(console.error);
+</script>
+
+</body>
+</html>
